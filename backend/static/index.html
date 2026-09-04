@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThembaPay &mdash; Trust-Scored Payments</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">TP</span>
+    <span class="brand-name">ThembaPay</span>
+  </div>
+  <p class="brand-tag">Every payment takes the safest route, at the lowest cost, in the shortest time.</p>
+</header>
+
+<main class="layout">
+
+  <section class="panel form-panel" aria-labelledby="form-heading">
+    <h1 id="form-heading">Send a payment</h1>
+    <p class="hint">Fill in the details, or load a scenario to see the system respond instantly.</p>
+
+    <div class="preset-row">
+      <button type="button" class="preset-btn preset-clean" data-preset="clean">
+        <span class="preset-label">Clean payment</span>
+        <span class="preset-sub">Known beneficiary, matching invoice</span>
+      </button>
+      <button type="button" class="preset-btn preset-hard" data-preset="hard">
+        <span class="preset-label">Hard case</span>
+        <span class="preset-sub">New beneficiary, high value, spotless invoice</span>
+      </button>
+    </div>
+
+    <form id="payment-form">
+      <fieldset>
+        <legend>Payment</legend>
+        <label>Sender ID
+          <input type="text" name="sender_id" required>
+        </label>
+        <div class="field-row">
+          <label>Amount
+            <input type="number" name="amount" min="0.01" step="0.01" required>
+          </label>
+          <label>Currency
+            <input type="text" name="currency" value="ZAR" required>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Beneficiary</legend>
+        <label>Beneficiary ID
+          <input type="text" name="beneficiary_id" required>
+        </label>
+        <label>Name
+          <input type="text" name="beneficiary_name" required>
+        </label>
+        <div class="field-row">
+          <label>Account number
+            <input type="text" name="account_number" required>
+          </label>
+          <label>Bank
+            <input type="text" name="bank_name" required>
+          </label>
+        </div>
+        <label>Country
+          <input type="text" name="country" required>
+        </label>
+      </fieldset>
+
+      <fieldset class="upload-fieldset">
+        <legend>Invoice image (optional)</legend>
+        <p class="hint">Upload a real invoice photo or scan and OCR will fill in the fields below automatically.</p>
+        <label class="upload-drop" for="invoice-upload">
+          <input type="file" id="invoice-upload" accept="image/png,image/jpeg,image/webp">
+          <span id="upload-label-text">Click to choose an invoice image (PNG, JPEG, WEBP)</span>
+        </label>
+        <div id="upload-status" class="upload-status"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Invoice</legend>
+        <div class="field-row">
+          <label>Invoice number
+            <input type="text" name="invoice_number" required>
+          </label>
+          <label>PO number
+            <input type="text" name="po_number" required>
+          </label>
+        </div>
+        <div class="field-row">
+          <label>Invoice amount
+            <input type="number" name="invoice_amount" min="0.01" step="0.01" required>
+          </label>
+          <label>Invoice date
+            <input type="date" name="invoice_date" required>
+          </label>
+        </div>
+        <label>Name on document
+          <input type="text" name="name_on_document" required>
+        </label>
+      </fieldset>
+
+      <button type="submit" class="submit-btn" id="submit-btn">Evaluate payment</button>
+    </form>
+  </section>
+
+  <section class="panel result-panel" aria-labelledby="result-heading" aria-live="polite">
+    <h1 id="result-heading">Evaluation</h1>
+
+    <ol class="pipeline" id="pipeline">
+      <li data-stage="verify"><span class="stage-dot"></span><span class="stage-label">Verify</span></li>
+      <li data-stage="check"><span class="stage-dot"></span><span class="stage-label">Check documents</span></li>
+      <li data-stage="score"><span class="stage-dot"></span><span class="stage-label">Score</span></li>
+      <li data-stage="route"><span class="stage-dot"></span><span class="stage-label">Route</span></li>
+      <li data-stage="send"><span class="stage-dot"></span><span class="stage-label">Send</span></li>
+    </ol>
+
+    <div id="empty-state" class="empty-state">
+      <p>Submit a payment on the left to see it evaluated in real time.</p>
+    </div>
+
+    <div id="result-content" class="result-content hidden">
+
+      <div class="decision-banner" id="decision-banner">
+        <span class="decision-label" id="decision-label"></span>
+        <span class="decision-score" id="decision-score"></span>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-card">
+          <h2>Trust factors</h2>
+          <ul class="factor-list" id="factor-list"></ul>
+        </div>
+
+        <div class="result-card">
+          <h2>Document check</h2>
+          <p class="doc-score" id="doc-score"></p>
+          <ul class="flag-list" id="flag-list"></ul>
+        </div>
+
+        <div class="result-card">
+          <h2>Route</h2>
+          <p class="route-rail" id="route-rail"></p>
+          <p class="route-detail" id="route-detail"></p>
+          <p class="route-reason" id="route-reason"></p>
+        </div>
+
+        <div class="result-card">
+          <h2>Audit trail</h2>
+          <p class="audit-hash" id="audit-hash"></p>
+          <button type="button" class="verify-btn" id="verify-chain-btn">Verify chain integrity</button>
+          <p class="chain-status" id="chain-status"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="error-state" class="error-state hidden">
+      <p id="error-message"></p>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
