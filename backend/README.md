@@ -158,7 +158,7 @@ backend/
 
 These are starting values for the demo, not tuned against real fraud-loss data — say so if asked.
 
-## Before the pitch: things to say out loud, not hide
+## Check list
 1. The document checker alone gets 100% precision / 81% recall on synthetic data — the 19% it misses is exactly why the trust-score model exists on top.
 2. The trust model's 100% holdout score reflects clean synthetic fraud patterns, not real-world performance.
 3. Route cost/speed figures are illustrative placeholders, not live rail pricing.
