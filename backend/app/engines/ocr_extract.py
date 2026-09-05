@@ -96,3 +96,27 @@ class TesseractOCRBackend:
         return pytesseract.image_to_string(Image.open(image_path))
     def extract(self, image_path):
         return parse_fields_from_text(self.extract_text(image_path))
+
+
+class PaddleOCRBackend:
+    _ocr = None  # loaded lazily, once, on first use - not at import time
+
+    @classmethod
+    def _get_engine(cls):
+        if cls._ocr is None:
+            from paddleocr import PaddleOCR
+            cls._ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+        return cls._ocr
+
+    def extract_text(self, image_path):
+        engine = self._get_engine()
+        result = engine.ocr(image_path, cls=True)
+        lines = []
+        for page in result or []:
+            for line in page or []:
+                # line = [box, (text, confidence)]
+                lines.append(line[1][0])
+        return "\n".join(lines)
+
+    def extract(self, image_path):
+        return parse_fields_from_text(self.extract_text(image_path))

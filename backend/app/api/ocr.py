@@ -3,12 +3,12 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from app.engines.ocr_extract import TesseractOCRBackend
+from app.engines.ocr_extract import TesseractOCRBackend , PaddleOCRBackend
 from app.schemas import OCRExtractionOut
 
 router = APIRouter(prefix="/ocr", tags=["ocr"])
 
-_backend = TesseractOCRBackend()
+_backend = PaddleOCRBackend()
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/jpg", "image/webp"}
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10MB - generous for a phone photo, small enough to reject accidents
