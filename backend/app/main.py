@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api import audit, payments, ocr
+from app.api import audit, payments, ocr, qr, bank_integration
 
 app = FastAPI(
     title="ThembaPay API",
@@ -23,9 +23,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include all routers
 app.include_router(payments.router)
 app.include_router(audit.router)
 app.include_router(ocr.router)
+app.include_router(qr.router)
+app.include_router(bank_integration.router)
 
 
 @app.get("/health")

@@ -58,6 +58,155 @@ document.querySelectorAll(".preset-btn").forEach((btn) => {
 const uploadInput = document.getElementById("invoice-upload");
 const uploadStatus = document.getElementById("upload-status");
 const uploadLabelText = document.getElementById("upload-label-text");
+// Universal QR Code functionality
+const qrGenerateBtn = document.getElementById('qr-generate-btn');
+const qrDisplay = document.getElementById('qr-display');
+const qrImage = document.getElementById('qr-image');
+const qrPaymentId = document.getElementById('qr-payment-id');
+const qrTrustScore = document.getElementById('qr-trust-score');
+const qrScanInput = document.getElementById('qr-scan-input');
+const qrScanResult = document.getElementById('qr-scan-result');
+const qrResultDecision = document.getElementById('qr-result-decision');
+const qrResultScore = document.getElementById('qr-result-score');
+const qrResultDetails = document.getElementById('qr-result-details');
+
+// Generate QR from current form data
+qrGenerateBtn.addEventListener('click', async () => {
+  const formData = formToPayload(form);
+  
+  // Basic validation
+  if (!formData.sender_id || !formData.beneficiary.beneficiary_id || !formData.amount) {
+    alert('Please fill in Sender ID, Beneficiary ID, and Amount');
+    return;
+  }
+  
+  try {
+    qrGenerateBtn.disabled = true;
+    qrGenerateBtn.textContent = 'Generating...';
+    
+    const response = await fetch(`${API_BASE}/qr/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender_id: formData.sender_id,
+        amount: formData.amount,
+        currency: formData.currency || 'ZAR',
+        beneficiary_id: formData.beneficiary.beneficiary_id,
+        beneficiary_name: formData.beneficiary.name,
+        invoice_number: formData.invoice.invoice_number || 'INV-AUTO',
+        po_number: formData.invoice.po_number || 'PO-AUTO',
+        purpose: 'Goods and Services'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    // Display QR
+    qrImage.src = `data:image/png;base64,${result.qr_code}`;
+    qrPaymentId.textContent = `ID: ${result.payment_id}`;
+    qrTrustScore.textContent = `Trust: ${result.trust_score.toFixed(1)}%`;
+    qrDisplay.classList.remove('hidden');
+    
+    // Hide previous scan results
+    qrScanResult.classList.add('hidden');
+    
+  } catch (error) {
+    alert(`Failed to generate QR: ${error.message}`);
+  } finally {
+    qrGenerateBtn.disabled = false;
+    qrGenerateBtn.textContent = 'Generate QR Code';
+  }
+});
+
+// Scan QR code
+qrScanInput.addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch(`${API_BASE}/qr/scan`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    // Display scan results
+    const decisionClass = result.decision;
+    qrResultDecision.textContent = result.decision.toUpperCase();
+    qrResultDecision.className = `qr-result-decision ${decisionClass}`;
+    qrResultScore.textContent = `Trust Score: ${result.trust_score.toFixed(1)}%`;
+    
+    // Populate details
+    let detailsHTML = '';
+    
+    // Buyer history
+    if (result.buyer_history) {
+      detailsHTML += `
+        <p><span class="label">Buyer:</span><span class="value">${result.buyer_history.id}</span></p>
+        <p><span class="label">Transactions:</span><span class="value">${result.buyer_history.total_transactions}</span></p>
+        <p><span class="label">Success Rate:</span><span class="value">${result.buyer_history.success_rate.toFixed(1)}%</span></p>
+        <p><span class="label">Trust Level:</span><span class="value">${result.buyer_history.trust_level.toFixed(1)}%</span></p>
+      `;
+    }
+    
+    // Seller history
+    if (result.seller_history) {
+      detailsHTML += `
+        <p><span class="label">Seller:</span><span class="value">${result.seller_history.id}</span></p>
+        <p><span class="label">Transactions:</span><span class="value">${result.seller_history.total_transactions}</span></p>
+        <p><span class="label">Success Rate:</span><span class="value">${result.seller_history.success_rate.toFixed(1)}%</span></p>
+        <p><span class="label">Trust Level:</span><span class="value">${result.seller_history.trust_level.toFixed(1)}%</span></p>
+      `;
+    }
+    
+    // Route information
+    if (result.optimised_route) {
+      detailsHTML += `
+        <p><span class="label">Route:</span><span class="value">${result.optimised_route.rail}</span></p>
+        <p><span class="label">Cost:</span><span class="value">${result.optimised_route.currency} ${result.optimised_route.estimated_cost.toFixed(2)}</span></p>
+        <p><span class="label">Time:</span><span class="value">${result.optimised_route.estimated_time_hours < 1 ? Math.round(result.optimised_route.estimated_time_hours * 60) + ' min' : result.optimised_route.estimated_time_hours + ' hrs'}</span></p>
+        <p><span class="label">Reason:</span><span class="value">${result.optimised_route.reason}</span></p>
+      `;
+    }
+    
+    // Verification details
+    if (result.verification_details) {
+      const ocrStatus = result.verification_details.ocr_verified;
+      detailsHTML += `
+        <p><span class="label">OCR Verified:</span><span class="value">${ocrStatus.verified ? '✅ Yes' : '❌ No'} (${(ocrStatus.confidence || 0) * 100}%)</span></p>
+        <p><span class="label">Trust Check:</span><span class="value">${result.verification_details.trust_check.reason || 'Verified'}</span></p>
+      `;
+    }
+    
+    qrResultDetails.innerHTML = detailsHTML;
+    qrScanResult.classList.remove('hidden');
+    
+    // Auto-fill form with QR data
+    if (result.payment_id) {
+      // You could auto-fill some fields here if needed
+    }
+    
+  } catch (error) {
+    alert(`QR scan failed: ${error.message}`);
+  }
+});
+
+// Reset QR scan input after use
+qrScanInput.addEventListener('click', () => {
+  qrScanInput.value = ''; // Clear so same file can be scanned again
+});
 
 uploadInput.addEventListener("change", async () => {
   const file = uploadInput.files[0];

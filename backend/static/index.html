@@ -80,6 +80,42 @@
         <div id="upload-status" class="upload-status"></div>
       </fieldset>
 
+      <!-- Universal QR Section -->
+<fieldset class="qr-fieldset">
+  <legend>Universal QR Payment</legend>
+  <p class="hint">Generate a QR code for instant payment with trust scoring</p>
+  
+  <div class="qr-controls">
+    <div class="qr-actions">
+      <button type="button" class="qr-generate-btn" id="qr-generate-btn">
+        Generate QR Code
+      </button>
+      <div class="qr-upload-wrapper">
+        <label for="qr-scan-input" class="qr-scan-label">
+          <span>Scan QR</span>
+          <input type="file" id="qr-scan-input" accept="image/*" capture="environment">
+        </label>
+      </div>
+    </div>
+    
+    <div id="qr-display" class="qr-display hidden">
+      <img id="qr-image" src="" alt="QR Code">
+      <div class="qr-info">
+        <span class="qr-payment-id" id="qr-payment-id"></span>
+        <span class="qr-trust-score" id="qr-trust-score"></span>
+      </div>
+    </div>
+    
+    <div id="qr-scan-result" class="qr-scan-result hidden">
+      <div class="qr-result-header">
+        <span class="qr-result-decision" id="qr-result-decision"></span>
+        <span class="qr-result-score" id="qr-result-score"></span>
+      </div>
+      <div class="qr-result-details" id="qr-result-details"></div>
+    </div>
+  </div>
+</fieldset>
+
       <fieldset>
         <legend>Invoice</legend>
         <div class="field-row">
