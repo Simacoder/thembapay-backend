@@ -9,7 +9,7 @@ pandas==2.2.2
 numpy==1.26.4
 
 faker==28.4.1
-shap==0.46.0
+shap==0.45.1
 
 paddleocr
 
