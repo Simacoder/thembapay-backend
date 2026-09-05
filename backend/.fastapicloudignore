@@ -1,1 +1,6 @@
-notebooks/ ml/ .pytest_cache/ tests/
+notebooks/
+ml/*
+!ml/model/
+!ml/model/trust_model.json
+.pytest_cache/
+tests/
